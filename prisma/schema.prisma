@@ -1,0 +1,61 @@
+// Gujju Forex — Divyashtra course funnel
+// Local dev uses SQLite (zero config). For production switch `provider` to
+// "postgresql" and point DATABASE_URL at your Neon/Supabase/RDS instance.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A person who submitted the enrollment form. Created BEFORE payment, so
+/// leads that never pay are still visible in the admin dashboard.
+model Lead {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String
+  city       String?
+  experience String   @default("beginner") // beginner | intermediate | advanced
+  goal       String?
+  source     String? // utm_source / referrer
+  status     String   @default("PENDING") // PENDING | PAID | FAILED
+  notes      String?
+  contacted  Boolean  @default(false)
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
+}
+
+/// A Razorpay order. One lead can retry payment, hence one-to-many.
+model Order {
+  id                String   @id @default(cuid())
+  leadId            String
+  lead              Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  razorpayOrderId   String   @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  receipt           String
+  amount            Int // in paise
+  currency          String   @default("INR")
+  status            String   @default("CREATED") // CREATED | PAID | FAILED
+  method            String?
+  failureReason     String?
+  notes             String?
+  paidAt            DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
