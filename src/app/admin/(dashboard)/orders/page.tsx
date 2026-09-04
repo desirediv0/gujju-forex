@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader, EmptyState, StatCard, StatusPill } from "@/components/admin/ui";
 import Filters from "@/components/admin/Filters";
 import Pagination from "@/components/admin/Pagination";
+import ClearDataButton from "@/components/admin/ClearDataButton";
+import OrderRowActions from "@/components/admin/OrderRowActions";
 import { formatDateTime, formatINR } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -63,12 +65,15 @@ export default async function OrdersPage({
         title="Orders"
         subtitle="Every Razorpay order created from the enrollment form."
         action={
-          <a
-            href="/api/admin/export?type=orders"
-            className="rounded-xl border border-gold-300/30 px-4 py-2.5 text-[13px] font-semibold text-gold-100 transition hover:bg-gold-300/10"
-          >
-            Export CSV
-          </a>
+          <div className="flex items-center gap-2.5">
+            <ClearDataButton />
+            <a
+              href="/api/admin/export?type=orders"
+              className="rounded-xl border border-gold-300/30 px-4 py-2.5 text-[13px] font-semibold text-gold-100 transition hover:bg-gold-300/10"
+            >
+              Export CSV
+            </a>
+          </div>
         }
       />
 
@@ -98,7 +103,7 @@ export default async function OrdersPage({
         />
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-white/8">
-          <table className="w-full min-w-[860px] border-collapse text-left">
+          <table className="w-full min-w-[900px] border-collapse text-left">
             <thead>
               <tr className="border-b border-white/8 bg-ink-2/60">
                 {[
@@ -108,9 +113,10 @@ export default async function OrdersPage({
                   "Amount",
                   "Status",
                   "Date",
-                ].map((heading) => (
+                  "",
+                ].map((heading, i) => (
                   <th
-                    key={heading}
+                    key={i}
                     className="px-4 py-3 text-[10.5px] font-bold uppercase tracking-[0.16em] text-neutral-500"
                   >
                     {heading}
@@ -148,6 +154,13 @@ export default async function OrdersPage({
                   </td>
                   <td className="px-4 py-3.5 text-[12px] text-neutral-500">
                     {formatDateTime(order.paidAt ?? order.createdAt)}
+                  </td>
+                  <td className="px-3 py-3.5 text-right">
+                    <OrderRowActions
+                      orderId={order.id}
+                      razorpayOrderId={order.razorpayOrderId}
+                      customerName={order.lead.name}
+                    />
                   </td>
                 </tr>
               ))}

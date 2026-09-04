@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { StatusPill } from "./ui";
+import ConfirmDialog from "./ConfirmDialog";
 import {
   deleteLead,
   saveNote,
@@ -38,6 +39,7 @@ export default function LeadCard({ lead }: { lead: LeadRow }) {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState(lead.notes ?? "");
   const [saved, setSaved] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const waHref = `https://wa.me/91${lead.phone}?text=${encodeURIComponent(
@@ -223,20 +225,31 @@ export default function LeadCard({ lead }: { lead: LeadRow }) {
             <button
               type="button"
               disabled={pending}
-              onClick={() => {
-                if (
-                  confirm(
-                    `Delete ${lead.name} and all their payment records? This cannot be undone.`,
-                  )
-                ) {
-                  startTransition(() => deleteLead(lead.id));
-                }
-              }}
+              onClick={() => setShowDeleteModal(true)}
               className="ml-auto rounded-lg border border-red-500/25 px-4 py-2 text-[12.5px] font-semibold text-red-400/90 transition hover:border-red-500/60 hover:bg-red-500/10 disabled:opacity-60"
             >
               Delete
             </button>
           </div>
+
+          <ConfirmDialog
+            open={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            onConfirm={async () => {
+              await deleteLead(lead.id);
+            }}
+            title="Delete Lead"
+            description={
+              <>
+                Are you sure you want to delete{" "}
+                <strong className="text-white">{lead.name}</strong> (+91 {lead.phone})?
+                <br />
+                This will permanently remove this lead and all associated payment records. This action cannot be undone.
+              </>
+            }
+            confirmText="Delete Lead"
+            tone="danger"
+          />
         </div>
       )}
     </li>

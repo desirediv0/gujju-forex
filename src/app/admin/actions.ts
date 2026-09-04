@@ -38,3 +38,16 @@ export async function deleteLead(leadId: string) {
   await prisma.lead.delete({ where: { id: leadId } });
   revalidatePath("/admin", "layout");
 }
+
+export async function deleteOrder(orderId: string) {
+  await assertAdmin();
+  await prisma.order.delete({ where: { id: orderId } });
+  revalidatePath("/admin", "layout");
+}
+
+export async function clearAllData() {
+  await assertAdmin();
+  await prisma.order.deleteMany({});
+  await prisma.lead.deleteMany({});
+  revalidatePath("/admin", "layout");
+}

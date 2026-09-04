@@ -4,6 +4,7 @@ import { PageHeader, EmptyState, StatCard } from "@/components/admin/ui";
 import Filters from "@/components/admin/Filters";
 import Pagination from "@/components/admin/Pagination";
 import LeadCard, { type LeadRow } from "@/components/admin/LeadCard";
+import ClearDataButton from "@/components/admin/ClearDataButton";
 
 export const dynamic = "force-dynamic";
 
@@ -78,12 +79,15 @@ export default async function LeadsPage({
         title="Leads"
         subtitle="Everyone who submitted the enrollment form — paid or not."
         action={
-          <a
-            href="/api/admin/export?type=leads"
-            className="rounded-xl border border-gold-300/30 px-4 py-2.5 text-[13px] font-semibold text-gold-100 transition hover:bg-gold-300/10"
-          >
-            Export CSV
-          </a>
+          <div className="flex items-center gap-2.5">
+            <ClearDataButton />
+            <a
+              href="/api/admin/export?type=leads"
+              className="rounded-xl border border-gold-300/30 px-4 py-2.5 text-[13px] font-semibold text-gold-100 transition hover:bg-gold-300/10"
+            >
+              Export CSV
+            </a>
+          </div>
         }
       />
 

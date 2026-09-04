@@ -11,6 +11,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "node prisma/seed.mjs",
+    "db:clear": "node prisma/clear.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {
