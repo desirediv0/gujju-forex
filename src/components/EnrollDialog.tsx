@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ENROLL_EVENT } from "./EnrollButton";
 import { site, whatsappLink } from "@/lib/site";
 import { formatINR } from "@/lib/utils";
+import { GUJJU_FOREX_LOGO_BASE64 } from "@/lib/logo";
 
 type Step = "form" | "processing" | "success" | "error";
 
@@ -180,7 +181,7 @@ export default function EnrollDialog() {
       currency: data.currency ?? "INR",
       name: site.brand,
       description: `${site.course.codename} — ${site.course.name}`,
-      image: "/images/logo-sm.png",
+      image: GUJJU_FOREX_LOGO_BASE64,
       order_id: orderId,
       prefill: data.prefill,
       notes: { leadId: data.leadId ?? "" },
