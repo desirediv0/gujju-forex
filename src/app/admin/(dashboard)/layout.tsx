@@ -2,8 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import SidebarNav from "@/components/admin/SidebarNav";
-import { ADMIN_COOKIE, getAdminUsername } from "@/lib/auth";
+import { ADMIN_COOKIE, getAdminUsername, verifyAdminToken } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -16,7 +17,14 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const store = await cookies();
-  const username = await getAdminUsername(store.get(ADMIN_COOKIE)?.value);
+  const token = store.get(ADMIN_COOKIE)?.value;
+  const authed = await verifyAdminToken(token);
+
+  if (!authed) {
+    redirect("/admin/login");
+  }
+
+  const username = await getAdminUsername(token);
   return (
     <div className="min-h-screen lg:flex">
       <aside className="sticky top-0 z-30 border-b border-white/8 bg-ink-2/80 backdrop-blur-xl lg:h-screen lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r">

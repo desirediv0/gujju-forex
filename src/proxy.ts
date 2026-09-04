@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/auth";
 
-export default async function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
+  return handleProxy(request);
+}
+
+export default async function handleProxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   const isLoginPage = pathname === "/admin/login";
@@ -27,5 +31,6 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin", "/admin/:path*"],
 };
+
