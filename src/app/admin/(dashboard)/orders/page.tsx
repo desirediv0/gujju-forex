@@ -30,12 +30,12 @@ export default async function OrdersPage({
   if (status) where.status = status;
   if (q) {
     where.OR = [
-      { razorpayOrderId: { contains: q } },
-      { razorpayPaymentId: { contains: q } },
-      { receipt: { contains: q } },
-      { lead: { name: { contains: q } } },
-      { lead: { phone: { contains: q } } },
-      { lead: { email: { contains: q } } },
+      { razorpayOrderId: { contains: q, mode: "insensitive" } },
+      { razorpayPaymentId: { contains: q, mode: "insensitive" } },
+      { receipt: { contains: q, mode: "insensitive" } },
+      { lead: { name: { contains: q, mode: "insensitive" } } },
+      { lead: { phone: { contains: q, mode: "insensitive" } } },
+      { lead: { email: { contains: q, mode: "insensitive" } } },
     ];
   }
 

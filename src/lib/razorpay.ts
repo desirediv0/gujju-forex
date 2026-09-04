@@ -12,12 +12,27 @@ export function isRazorpayConfigured() {
 let client: Razorpay | null = null;
 
 export function getRazorpay() {
-  if (!isRazorpayConfigured()) return null;
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) return null;
   client ??= new Razorpay({
-    key_id: RAZORPAY_KEY_ID,
-    key_secret: RAZORPAY_KEY_SECRET,
+    key_id: keyId,
+    key_secret: keySecret,
   });
   return client;
+}
+
+/** Fetches full payment details directly from Razorpay API for 100% fraud/scam proofing. */
+export async function fetchRazorpayPayment(paymentId: string) {
+  const rzp = getRazorpay();
+  if (!rzp) return null;
+  try {
+    const payment = await rzp.payments.fetch(paymentId);
+    return payment;
+  } catch (error) {
+    console.error(`[razorpay] Failed to fetch payment ${paymentId}:`, error);
+    return null;
+  }
 }
 
 /** Verifies the checkout handler signature: HMAC_SHA256(order_id|payment_id). */

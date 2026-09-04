@@ -31,21 +31,30 @@ export async function POST(request: Request) {
 
   // Save the lead FIRST — that way people who abandon checkout are still
   // visible in the admin dashboard and can be followed up on WhatsApp.
-  const lead = await prisma.lead.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      city: data.city || null,
-      experience: data.experience,
-      goal: data.goal || null,
-      source: data.source || headers.get("referer") || null,
-      ipAddress:
-        headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-        headers.get("x-real-ip"),
-      userAgent: headers.get("user-agent"),
-    },
-  });
+  let lead;
+  try {
+    lead = await prisma.lead.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        city: data.city || null,
+        experience: data.experience,
+        goal: data.goal || null,
+        source: data.source || headers.get("referer") || null,
+        ipAddress:
+          headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+          headers.get("x-real-ip"),
+        userAgent: headers.get("user-agent"),
+      },
+    });
+  } catch (error) {
+    console.error("[enroll] Failed to save lead to database", error);
+    return NextResponse.json(
+      { error: "Could not save your details right now. Please try again in a moment." },
+      { status: 500 }
+    );
+  }
 
   const amount = site.course.pricePaise;
 
@@ -70,7 +79,7 @@ export async function POST(request: Request) {
 
   try {
     const razorpay = getRazorpay()!;
-    const receipt = `GF-${lead.id.slice(-10)}`;
+    const receipt = `GF_${Date.now().toString(36)}_${lead.id.slice(-8)}`;
     const order = await razorpay.orders.create({
       amount,
       currency: "INR",

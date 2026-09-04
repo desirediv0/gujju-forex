@@ -115,6 +115,7 @@ export default function EnrollDialog() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (step === "processing") return;
     setStep("processing");
     setMessage("");
     setFieldErrors({});

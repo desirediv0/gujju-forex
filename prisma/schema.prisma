@@ -1,13 +1,12 @@
 // Gujju Forex — Divyashtra course funnel
-// Local dev uses SQLite (zero config). For production switch `provider` to
-// "postgresql" and point DATABASE_URL at your Neon/Supabase/RDS instance.
+// Configured for PostgreSQL (Neon / Supabase / RDS / Local Postgres)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -35,6 +34,7 @@ model Lead {
   @@index([status])
   @@index([createdAt])
   @@index([email])
+  @@index([phone])
 }
 
 /// A Razorpay order. One lead can retry payment, hence one-to-many.
@@ -58,4 +58,6 @@ model Order {
 
   @@index([status])
   @@index([createdAt])
+  @@index([leadId])
+  @@index([razorpayPaymentId])
 }

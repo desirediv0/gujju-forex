@@ -38,10 +38,10 @@ export default async function LeadsPage({
 
   if (q) {
     where.OR = [
-      { name: { contains: q } },
-      { email: { contains: q } },
-      { phone: { contains: q } },
-      { city: { contains: q } },
+      { name: { contains: q, mode: "insensitive" } },
+      { email: { contains: q, mode: "insensitive" } },
+      { phone: { contains: q, mode: "insensitive" } },
+      { city: { contains: q, mode: "insensitive" } },
     ];
   }
 

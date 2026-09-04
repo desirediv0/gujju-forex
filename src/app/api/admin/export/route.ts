@@ -20,79 +20,84 @@ export async function GET(request: Request) {
   const type = new URL(request.url).searchParams.get("type") ?? "leads";
   const stamp = new Date().toISOString().slice(0, 10);
 
-  if (type === "orders") {
-    const orders = await prisma.order.findMany({
+  try {
+    if (type === "orders") {
+      const orders = await prisma.order.findMany({
+        orderBy: { createdAt: "desc" },
+        include: { lead: true },
+      });
+      const rows = [
+        [
+          "Order ID",
+          "Razorpay Order",
+          "Payment ID",
+          "Status",
+          "Amount (INR)",
+          "Method",
+          "Name",
+          "Phone",
+          "Email",
+          "Paid at",
+          "Created at",
+          "Failure reason",
+        ],
+        ...orders.map((o) => [
+          o.id,
+          o.razorpayOrderId,
+          o.razorpayPaymentId,
+          o.status,
+          (o.amount / 100).toFixed(2),
+          o.method,
+          o.lead.name,
+          o.lead.phone,
+          o.lead.email,
+          o.paidAt?.toISOString(),
+          o.createdAt.toISOString(),
+          o.failureReason,
+        ]),
+      ];
+      return csvResponse(rows, `gujju-forex-orders-${stamp}.csv`);
+    }
+
+    const leads = await prisma.lead.findMany({
       orderBy: { createdAt: "desc" },
-      include: { lead: true },
+      include: { orders: { orderBy: { createdAt: "desc" }, take: 1 } },
     });
     const rows = [
       [
-        "Order ID",
-        "Razorpay Order",
-        "Payment ID",
-        "Status",
-        "Amount (INR)",
-        "Method",
+        "Lead ID",
         "Name",
         "Phone",
         "Email",
-        "Paid at",
+        "City",
+        "Experience",
+        "Status",
+        "Contacted",
+        "Latest payment ID",
+        "Source",
+        "Notes",
         "Created at",
-        "Failure reason",
       ],
-      ...orders.map((o) => [
-        o.id,
-        o.razorpayOrderId,
-        o.razorpayPaymentId,
-        o.status,
-        (o.amount / 100).toFixed(2),
-        o.method,
-        o.lead.name,
-        o.lead.phone,
-        o.lead.email,
-        o.paidAt?.toISOString(),
-        o.createdAt.toISOString(),
-        o.failureReason,
+      ...leads.map((l) => [
+        l.id,
+        l.name,
+        l.phone,
+        l.email,
+        l.city,
+        l.experience,
+        l.status,
+        l.contacted ? "Yes" : "No",
+        l.orders[0]?.razorpayPaymentId,
+        l.source,
+        l.notes,
+        l.createdAt.toISOString(),
       ]),
     ];
-    return csvResponse(rows, `gujju-forex-orders-${stamp}.csv`);
+    return csvResponse(rows, `gujju-forex-leads-${stamp}.csv`);
+  } catch (error) {
+    console.error("[export] Error exporting data", error);
+    return NextResponse.json({ error: "Failed to export CSV" }, { status: 500 });
   }
-
-  const leads = await prisma.lead.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { orders: { orderBy: { createdAt: "desc" }, take: 1 } },
-  });
-  const rows = [
-    [
-      "Lead ID",
-      "Name",
-      "Phone",
-      "Email",
-      "City",
-      "Experience",
-      "Status",
-      "Contacted",
-      "Latest payment ID",
-      "Source",
-      "Notes",
-      "Created at",
-    ],
-    ...leads.map((l) => [
-      l.id,
-      l.name,
-      l.phone,
-      l.email,
-      l.city,
-      l.experience,
-      l.status,
-      l.contacted ? "Yes" : "No",
-      l.orders[0]?.razorpayPaymentId,
-      l.source,
-      l.notes,
-      l.createdAt.toISOString(),
-    ]),
-  ];
-  return csvResponse(rows, `gujju-forex-leads-${stamp}.csv`);
 }
 
 function csvResponse(rows: unknown[][], filename: string) {
